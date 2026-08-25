@@ -1,7 +1,8 @@
 import type { ReactNode } from "react"
+import "./globals.css"
 
 export const metadata = {
-  title: "Formulir Pendaftaran Lomba",
+  title: "Formulir Pendaftaran Lomba — Auditphoria 6.0",
 }
 
 export default function RootLayout({ children }: { children: ReactNode }) {
