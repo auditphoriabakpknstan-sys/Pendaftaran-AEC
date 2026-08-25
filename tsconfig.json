@@ -1,1 +1,145 @@
+/**
+ * Konfigurasi 5 kategori lomba Auditphoria 6.0. File ini dipakai BERSAMA
+ * oleh app/page.tsx (client, untuk menampilkan field yang sesuai) dan
+ * app/api/submit/route.ts (server, untuk validasi ulang — jangan pernah
+ * cuma percaya validasi di browser).
+ *
+ * Tiap project Vercel (1 per kategori) menentukan kategorinya lewat 2 env
+ * var yang HARUS diisi NILAI YANG SAMA:
+ *   - LOMBA_KATEGORI          (dibaca di server, route.ts)
+ *   - NEXT_PUBLIC_LOMBA_KATEGORI (dibaca di browser, page.tsx)
+ * Nilainya salah satu dari: AEC, ARC, AICE, AVOC, LCCA
+ *
+ * Nama tab di Google Sheet HARUS PERSIS sama dengan kode kategori ini
+ * (mis. tab bernama "AEC", "ARC", dst) — lihat Code.gs.
+ */
+
+export type KategoriCode = "AEC" | "ARC" | "AICE" | "AVOC" | "LCCA"
+
+/** Aturan jumlah peserta per kategori. */
+export type TeamMode =
+  | "individu" // tidak ada field tim/anggota sama sekali
+  | "optional" // boleh solo atau beregu, Nama Tim & anggota opsional
+  | "wajib3" // wajib tepat 3 orang: ketua + 2 anggota, semua wajib diisi
+
+/** Jenis "karya" yang dikumpulkan — beda-beda tiap kategori. */
+export type KaryaType =
+  | "none" // tidak ada karya yang dikumpulkan (mis. LCCA)
+  | "file" // upload berkas
+  | "link" // isi link (video TikTok/IG, dst) — bukan upload berkas
+  | "file+link" // keduanya (mis. AICE: upload poster PDF + link postingan IG)
+
+export type KategoriConfig = {
+  code: KategoriCode
+  fullName: string
+  teamMode: TeamMode
+  karyaType: KaryaType
+  karyaFileLabel?: string
+  karyaFileHint?: string
+  karyaFileAccept?: string
+  karyaLinkLabel?: string
+  karyaLinkHint?: string
+  karyaLinkPlaceholder?: string
+}
+
+export const KATEGORI_LIST: KategoriConfig[] = [
+  {
+    code: "AEC",
+    fullName: "Auditphoria Essay Competition",
+    teamMode: "optional",
+    karyaType: "file",
+    karyaFileLabel: "File Abstrak Essay",
+    karyaFileHint: "PDF / DOC / DOCX · maks 10MB",
+    karyaFileAccept: ".pdf,.doc,.docx",
+  },
+  {
+    code: "ARC",
+    fullName: "Auditphoria Reels Competition",
+    teamMode: "individu",
+    karyaType: "link",
+    karyaLinkLabel: "Link Video (TikTok / Instagram)",
+    karyaLinkHint: "Tempel link postingan video Anda (bukan berkas video)",
+    karyaLinkPlaceholder: "https://www.tiktok.com/@akun/video/...",
+  },
+  {
+    code: "AICE",
+    fullName: "Auditphoria Infografis Competition",
+    teamMode: "individu",
+    karyaType: "file+link",
+    karyaFileLabel: "File Poster (PDF)",
+    karyaFileHint: "PDF · maks 10MB",
+    karyaFileAccept: ".pdf",
+    karyaLinkLabel: "Link Postingan Poster di Instagram",
+    karyaLinkHint: "Tempel link postingan feed/carousel IG Anda",
+    karyaLinkPlaceholder: "https://www.instagram.com/p/...",
+  },
+  {
+    code: "AVOC",
+    fullName: "Audit Voice Over Competition",
+    teamMode: "individu",
+    karyaType: "file",
+    karyaFileLabel: "File Voice Over",
+    karyaFileHint: "MP3 / WAV / M4A · maks 10MB",
+    karyaFileAccept: "audio/mpeg,audio/wav,audio/mp4,audio/x-m4a,.mp3,.wav,.m4a",
+  },
+  {
+    code: "LCCA",
+    fullName: "Lomba Cerdas Cermat Audit",
+    teamMode: "wajib3",
+    karyaType: "none",
+  },
+]
+
+export function getKategoriConfig(code: string | undefined): KategoriConfig {
+  const found = KATEGORI_LIST.find((k) => k.code === code)
+  if (!found) {
+    throw new Error(
+      `Kategori "${code}" tidak dikenali. Cek env var LOMBA_KATEGORI / NEXT_PUBLIC_LOMBA_KATEGORI — harus salah satu dari: ${KATEGORI_LIST.map((k) => k.code).join(", ")}.`,
+    )
+  }
+  return found
+}
+
+/** Berkas umum yang wajib diunggah di SEMUA kategori (kecuali karya). */
+export const COMMON_FILE_FIELDS = [
+  {
+    key: "followIg",
+    label: "Bukti Follow Instagram Panitia Auditphoria 6.0",
+    hint: "Screenshot JPG/PNG · maks 10MB",
+    accept: "image/png,image/jpeg",
+  },
+  {
+    key: "ktm",
+    label: "Scan KTM / Identitas Mahasiswa",
+    hint: "JPG/PNG/PDF · maks 10MB",
+    accept: "image/png,image/jpeg,.pdf",
+  },
+  {
+    key: "posterWa",
+    label: "Bukti Share Poster di Grup WA",
+    hint: "Screenshot JPG/PNG · maks 10MB",
+    accept: "image/png,image/jpeg",
+  },
+  {
+    key: "posterIg",
+    label: "Bukti Share Poster di IG Story",
+    hint: "Screenshot JPG/PNG · maks 10MB",
+    accept: "image/png,image/jpeg",
+  },
+  {
+    key: "twibbon",
+    label: "Bukti Upload Twibbon",
+    hint: "Screenshot JPG/PNG · maks 10MB",
+    accept: "image/png,image/jpeg",
+  },
+] as const
+
+export type CommonFieldKey = (typeof COMMON_FILE_FIELDS)[number]["key"]
+
+export const PAYMENT_FIELD = {
+  key: "buktiBayar",
+  label: "Bukti Pembayaran",
+  hint: "JPG/PNG/PDF · maks 10MB",
+  accept: "image/png,image/jpeg,.pdf",
+} as const
 
